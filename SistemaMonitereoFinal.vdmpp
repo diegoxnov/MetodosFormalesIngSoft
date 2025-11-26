@@ -1,0 +1,367 @@
+class Embarcacion
+
+instance variables
+  public matricula : seq of char := [];
+  public tipo : seq of char := [];
+  public bandera : seq of char := [];
+  public licenciaVigente : bool := false;
+
+operations
+  public Embarcacion: seq of char * seq of char * seq of char * bool ==> Embarcacion
+  Embarcacion(mat, tip, band, lic) == (
+    matricula := mat;
+    tipo := tip;
+    bandera := band;
+    licenciaVigente := lic
+  )
+  pre mat <> [] and tip <> [] and band <> []
+  post matricula = mat and tipo = tip and bandera = band;
+  
+  public getMatricula: () ==> seq of char
+  getMatricula() == return matricula;
+  
+  public getTipo: () ==> seq of char
+  getTipo() == return tipo;
+  
+  public getBandera: () ==> seq of char
+  getBandera() == return bandera;
+  
+  public tieneLicencia: () ==> bool
+  tieneLicencia() == return licenciaVigente;
+
+end Embarcacion
+
+
+class ZonaVeda
+
+instance variables
+  public nombre : seq of char := [];
+  public latitudMin : real := 0.0;
+  public latitudMax : real := 0.0;
+  public longitudMin : real := 0.0;
+  public longitudMax : real := 0.0;
+  public fechaInicio : seq of char := [];
+  public fechaFin : seq of char := [];
+  public activa : bool := false;
+
+operations
+  public ZonaVeda: seq of char * real * real * real * real * seq of char * seq of char ==> ZonaVeda
+  ZonaVeda(nom, latMin, latMax, lonMin, lonMax, fInicio, fFin) == (
+    nombre := nom;
+    latitudMin := latMin;
+    latitudMax := latMax;
+    longitudMin := lonMin;
+    longitudMax := lonMax;
+    fechaInicio := fInicio;
+    fechaFin := fFin;
+    activa := true
+  )
+  pre nom <> [] and 
+      latMin >= -90 and latMax <= 90 and latMin < latMax and
+      lonMin >= -180 and lonMax <= 180 and lonMin < lonMax
+  post nombre = nom and activa = true;
+  
+  public activarVeda: () ==> ()
+  activarVeda() == activa := true;
+  
+  public desactivarVeda: () ==> ()
+  desactivarVeda() == activa := false;
+  
+  public estaActiva: () ==> bool
+  estaActiva() == return activa;
+  
+  public contieneUbicacion: real * real ==> bool
+  contieneUbicacion(lat, lon) == (
+    return lat >= latitudMin and lat <= latitudMax and
+           lon >= longitudMin and lon <= longitudMax
+  );
+  
+  public getNombre: () ==> seq of char
+  getNombre() == return nombre;
+  
+  public getCoordenadas: () ==> real * real * real * real
+  getCoordenadas() == return mk_(latitudMin, latitudMax, longitudMin, longitudMax);
+
+end ZonaVeda
+
+
+class ZonaProhibida
+
+instance variables
+  public nombre : seq of char := [];
+  public latitudMin : real := 0.0;
+  public latitudMax : real := 0.0;
+  public longitudMin : real := 0.0;
+  public longitudMax : real := 0.0;
+  public permanente : bool := true;
+
+operations
+  public ZonaProhibida: seq of char * real * real * real * real * bool ==> ZonaProhibida
+  ZonaProhibida(nom, latMin, latMax, lonMin, lonMax, perm) == (
+    nombre := nom;
+    latitudMin := latMin;
+    latitudMax := latMax;
+    longitudMin := lonMin;
+    longitudMax := lonMax;
+    permanente := perm
+  )
+  pre nom <> [] and 
+      latMin >= -90 and latMax <= 90 and latMin < latMax and
+      lonMin >= -180 and lonMax <= 180 and lonMin < lonMax
+  post nombre = nom;
+  
+  public contieneUbicacion: real * real ==> bool
+  contieneUbicacion(lat, lon) == (
+    return lat >= latitudMin and lat <= latitudMax and
+           lon >= longitudMin and lon <= longitudMax
+  );
+  
+  public getNombre: () ==> seq of char
+  getNombre() == return nombre;
+  
+  public esPermanente: () ==> bool
+  esPermanente() == return permanente;
+
+end ZonaProhibida
+
+
+class Evidencia
+
+instance variables
+  public id : seq of char := [];
+  public embarcacionId : seq of char := [];
+  public latitud : real := 0.0;
+  public longitud : real := 0.0;
+  public timestamp : seq of char := [];
+  public fuente : seq of char := [];
+  public embarcacion : [Embarcacion] := nil;
+
+operations
+  public Evidencia: seq of char * seq of char * real * real * seq of char * seq of char * [Embarcacion] ==> Evidencia
+  Evidencia(eid, embId, lat, lon, ts, fue, emb) == (
+    id := eid;
+    embarcacionId := embId;
+    latitud := lat;
+    longitud := lon;
+    timestamp := ts;
+    fuente := fue;
+    embarcacion := emb
+  )
+  pre eid <> [] and embId <> [] and 
+      lat >= -90 and lat <= 90 and 
+      lon >= -180 and lon <= 180 and
+      ts <> [] and fue <> []
+  post id = eid and latitud = lat and longitud = lon;
+  
+  public getId: () ==> seq of char
+  getId() == return id;
+  
+  public getLatitud: () ==> real
+  getLatitud() == return latitud;
+  
+  public getLongitud: () ==> real
+  getLongitud() == return longitud;
+  
+  public getTimestamp: () ==> seq of char
+  getTimestamp() == return timestamp;
+  
+  public getEmbarcacionId: () ==> seq of char
+  getEmbarcacionId() == return embarcacionId;
+  
+  public getEmbarcacion: () ==> [Embarcacion]
+  getEmbarcacion() == return embarcacion;
+
+end Evidencia
+
+
+class Alerta
+
+types
+  public TipoInfraccion = seq of char
+  inv t == t in set {"VEDA_TEMPORAL", "ZONA_PROHIBIDA", "DOCUMENTO_INVALIDO", "SIN_LICENCIA"};
+
+instance variables
+  public id : seq of char := [];
+  public tipoInfraccion : TipoInfraccion := "VEDA_TEMPORAL";
+  public ubicacion : seq of char := [];
+  public horaDeteccion : seq of char := [];
+  public evidenciaId : seq of char := [];
+  public nivelConfianza : real := 0.0;
+  public justificacion : seq of char := [];
+  public notificada : bool := false;
+
+operations
+  public Alerta: seq of char * seq of char * seq of char * seq of char * seq of char * real * seq of char ==> Alerta
+  Alerta(aid, tipo, ubic, hora, evId, conf, just) == (
+    id := aid;
+    tipoInfraccion := tipo;
+    ubicacion := ubic;
+    horaDeteccion := hora;
+    evidenciaId := evId;
+    nivelConfianza := conf;
+    justificacion := just;
+    notificada := false
+  )
+  pre aid <> [] and 
+      tipo in set {"VEDA_TEMPORAL", "ZONA_PROHIBIDA", "DOCUMENTO_INVALIDO", "SIN_LICENCIA"} and
+      conf >= 0 and conf <= 1
+  post id = aid and nivelConfianza = conf;
+  
+  public notificar: seq of char ==> bool
+  notificar(canal) == (
+    notificada := true;
+    return canal in set {"EMAIL", "SMS", "DASHBOARD", "API"}
+  )
+  post notificada = true;
+  
+  public getId: () ==> seq of char
+  getId() == return id;
+  
+  public getTipoInfraccion: () ==> seq of char
+  getTipoInfraccion() == return tipoInfraccion;
+  
+  public getJustificacion: () ==> seq of char
+  getJustificacion() == return justificacion;
+  
+  public getNivelConfianza: () ==> real
+  getNivelConfianza() == return nivelConfianza;
+  
+  public estaNotificada: () ==> bool
+  estaNotificada() == return notificada;
+
+end Alerta
+
+
+class SistemaMonitoreo
+
+instance variables
+  public embarcaciones : seq of Embarcacion := [];
+  public evidencias : seq of Evidencia := [];
+  public alertas : seq of Alerta := [];
+  public zonasVeda : seq of ZonaVeda := [];
+  public zonasProhibidas : seq of ZonaProhibida := [];
+
+operations
+  public SistemaMonitoreo: () ==> SistemaMonitoreo
+  SistemaMonitoreo() == (
+    embarcaciones := [];
+    evidencias := [];
+    alertas := [];
+    zonasVeda := [];
+    zonasProhibidas := []
+  );
+  
+  public registrarEmbarcacion: Embarcacion ==> ()
+  registrarEmbarcacion(emb) == (
+    embarcaciones := embarcaciones ^ [emb]
+  );
+  
+  public registrarZonaVeda: ZonaVeda ==> ()
+  registrarZonaVeda(zona) == (
+    zonasVeda := zonasVeda ^ [zona]
+  );
+  
+  public registrarZonaProhibida: ZonaProhibida ==> ()
+  registrarZonaProhibida(zona) == (
+    zonasProhibidas := zonasProhibidas ^ [zona]
+  );
+  
+  public recibirEvidencia: Evidencia ==> ()
+  recibirEvidencia(ev) == (
+    evidencias := evidencias ^ [ev]
+  );
+  
+  public procesarEvidencia: Evidencia ==> [Alerta]
+  procesarEvidencia(ev) == (
+    dcl alerta : [Alerta] := nil;
+    dcl latStr : seq of char := [];
+    dcl lonStr : seq of char := [];
+    dcl lat : real := ev.getLatitud();
+    dcl lon : real := ev.getLongitud();
+    
+    -- Convertir coordenadas a texto
+    if lat >= 0 
+    then latStr := "Lat:Norte"
+    else latStr := "Lat:Sur";
+    
+    if lon >= 0
+    then lonStr := "Lon:Este"
+    else lonStr := "Lon:Oeste";
+    
+    -- Verificar zonas de veda activas
+    for zonaV in zonasVeda do (
+      if zonaV.estaActiva() and zonaV.contieneUbicacion(lat, lon)
+      then (
+        alerta := new Alerta(
+          "ALT-VEDA-" ^ zonaV.getNombre(),
+          "VEDA_TEMPORAL",
+          latStr ^ " " ^ lonStr,
+          ev.getTimestamp(),
+          ev.getId(),
+          0.9,
+          "Embarcacion en zona de veda: " ^ zonaV.getNombre()
+        );
+        alertas := alertas ^ [alerta];
+        return alerta
+      )
+    );
+    
+    -- Verificar zonas prohibidas
+    for zonaP in zonasProhibidas do (
+      if zonaP.contieneUbicacion(lat, lon)
+      then (
+        alerta := new Alerta(
+          "ALT-ZONA-" ^ zonaP.getNombre(),
+          "ZONA_PROHIBIDA",
+          latStr ^ " " ^ lonStr,
+          ev.getTimestamp(),
+          ev.getId(),
+          0.95,
+          "Embarcacion en zona prohibida: " ^ zonaP.getNombre()
+        );
+        alertas := alertas ^ [alerta];
+        return alerta
+      )
+    );
+    
+    -- Verificar licencia
+    if ev.getEmbarcacion() <> nil and not ev.getEmbarcacion().tieneLicencia()
+    then (
+      alerta := new Alerta(
+        "ALT-LIC-001",
+        "SIN_LICENCIA",
+        latStr ^ " " ^ lonStr,
+        ev.getTimestamp(),
+        ev.getId(),
+        0.85,
+        "Embarcacion sin licencia vigente"
+      );
+      alertas := alertas ^ [alerta];
+      return alerta
+    )
+    else
+      return nil
+  );
+  
+  public obtenerAlertas: () ==> seq of Alerta
+  obtenerAlertas() == return alertas;
+  
+  public obtenerAlertasPorTipo: seq of char ==> seq of Alerta
+  obtenerAlertasPorTipo(tipo) == (
+    dcl resultado : seq of Alerta := [];
+    for alerta in alertas do
+      if alerta.getTipoInfraccion() = tipo
+      then resultado := resultado ^ [alerta];
+    return resultado
+  );
+  
+  public contarAlertas: () ==> nat
+  contarAlertas() == return len alertas;
+  
+  public listarZonasVeda: () ==> seq of ZonaVeda
+  listarZonasVeda() == return zonasVeda;
+  
+  public listarZonasProhibidas: () ==> seq of ZonaProhibida
+  listarZonasProhibidas() == return zonasProhibidas;
+
+end SistemaMonitoreo
