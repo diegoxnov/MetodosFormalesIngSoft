@@ -1,0 +1,27 @@
+MODULE main
+VAR
+  estado_veda: {INACTIVA, ACTIVA};
+  hay_infraccion: boolean;
+
+ASSIGN
+  init(estado_veda) := INACTIVA;
+  init(hay_infraccion) := FALSE;
+  
+  next(estado_veda) :=
+    case
+      estado_veda = INACTIVA : {INACTIVA, ACTIVA};
+      estado_veda = ACTIVA : {ACTIVA, INACTIVA};
+    esac;
+    
+  next(hay_infraccion) :=
+    case
+      next(estado_veda) = INACTIVA : FALSE;
+      estado_veda = ACTIVA : {TRUE, FALSE};
+      TRUE : hay_infraccion;
+    esac;
+
+-- Propiedad 1: Safety - No puede haber infraccion si veda esta inactiva
+SPEC AG !(estado_veda = INACTIVA & hay_infraccion = TRUE)
+
+-- Propiedad 2: Liveness - Si veda esta activa, debe ser posible detectar infraccion
+SPEC AG (estado_veda = ACTIVA -> EF hay_infraccion = TRUE)
