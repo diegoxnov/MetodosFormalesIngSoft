@@ -1,4 +1,9 @@
 # Sistema de Monitoreo Marítimo -- Modelo Formal en VDM++
+##Integrantes:
+##Diego Nova Rosas
+##Angélica Castillo Tovar
+##Renzo Murillo Álvarez
+##Marcelo Silva Cabrera
 
 Este proyecto presenta un **modelo formal** de un sistema de monitoreo
 marítimo utilizando **VDM++**, aplicado en el contexto del curso
